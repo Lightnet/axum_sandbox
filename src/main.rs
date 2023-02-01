@@ -8,12 +8,11 @@
 // https://benw.is/posts/serving-static-files-with-axum#serve-files-with-axum
 
 // https://crates.io/crates/axum
+// https://github.com/joelparkerhenderson/demo-rust-axum/blob/main/src/main.rs
 
-
-
-
-
-
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+#![allow(unused_braces)]
 
 use axum::{
   //body::{ boxed, Body, BoxBody},
@@ -34,7 +33,6 @@ use std::{io};
 use serde::{Serialize, Deserialize};
 
 
-
 struct AppState {
   // ...
 }
@@ -42,6 +40,8 @@ struct AppState {
 async fn handle_error(_err: io::Error) -> impl IntoResponse {
   (StatusCode::INTERNAL_SERVER_ERROR, "Something went wrong...")
 }
+
+
 
 #[tokio::main]
 async fn main(){
@@ -65,14 +65,14 @@ async fn main(){
     .nest_service("/static", serve_dir.clone())
     //.route("/", get(root))
     .route("/", get(index))
-    .route("/echo", get(echo))
-    .route("/json", get(testjson))
-    .route("/state", get(handler))
-    .route("/text", get(with_array_headers))
-    .route("/hello/:name", get(json_hello))
+    //.route("/echo", get(echo))
+    //.route("/json", get(testjson))
+    //.route("/state", get(handler))
+    //.route("/text", get(with_array_headers))
+    //.route("/hello/:name", get(json_hello))
 
-    .route("/api/signin", post(create_user))
-    //.route("/api/signup", post(post_SignUp))
+    .route("/api/signin", post(signin_user))
+    .route("/api/signup", post(create_user))
     //.route("/api/forgot", get(json_hello))
     //.route("/api/token", get(json_hello))
     /*
@@ -95,8 +95,9 @@ async fn main(){
     .unwrap();
 }
 
-async fn index() -> &'static str {
-  "Hello, World!"
+async fn index() -> axum::response::Html<&'static str> {
+  println!("index");
+  include_str!("index.html").into()
 }
 
 
@@ -106,8 +107,14 @@ struct UserLogin {
   passprhase: String,
 }
 
-async fn post_SignIn(
-  Json(payload): Json<UserLogin>,
+#[derive(Deserialize)]
+struct UserSigin {
+  alias: String,
+  passprhase: String,
+}
+
+async fn signin_user(
+  Json(payload): Json<UserSigin>,
 ) -> impl IntoResponse{
   println!("alias {}", payload.alias);
 
@@ -146,44 +153,41 @@ async fn create_user(Json(payload): Json<CreateUser>,) -> impl IntoResponse {
 
 
 
-async fn root() -> &'static str {
-  "Hello, World!"
-}
+//async fn root() -> &'static str {
+  //"Hello, World!"
+//}
 
+//async fn echo() -> &'static str {
+  //"Hello, World!"
+//}
 
-async fn echo() -> &'static str {
-  "Hello, World!"
-}
+//async fn testjson() -> Json<Value>{
+  //Json(json!({ "data": 42 }))
+//}
 
-async fn testjson() -> Json<Value>{
-  Json(json!({ "data": 42 }))
-}
-
-async fn handler(
-  State(state): State<Arc<AppState>>,
-)  -> &'static str{
+//async fn handler(
+  //State(state): State<Arc<AppState>>,
+//)  -> &'static str{
   // ...
-  println!("state!");
-
-  "state"
-}
+  //println!("state!");
+  //"state"
+//}
 
 // `Html` gives a content-type of `text/html`
-async fn html() -> Html<&'static str> {
-  Html("<h1>Hello, World!</h1>")
-}
+//async fn html() -> Html<&'static str> {
+  //Html("<h1>Hello, World!</h1>")
+//}
 
-async fn json_hello(Path(name): Path<String>) -> impl IntoResponse {
-  let greeting = name.as_str();
-  let hello = String::from("Hello ");
-
-  (StatusCode::OK, Json(json!({"message": hello + greeting })))
-}
+//async fn json_hello(Path(name): Path<String>) -> impl IntoResponse {
+  //let greeting = name.as_str();
+  //let hello = String::from("Hello ");
+  //(StatusCode::OK, Json(json!({"message": hello + greeting })))
+//}
 
 // Or an array of tuples to more easily build the headers
-async fn with_array_headers() -> impl IntoResponse {
-  ([(header::CONTENT_TYPE, "text/plain")], "foo")
-}
+//async fn with_array_headers() -> impl IntoResponse {
+  //([(header::CONTENT_TYPE, "text/plain")], "foo")
+//}
 
 
 /*
