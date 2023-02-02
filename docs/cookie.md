@@ -2,8 +2,8 @@
  * https://github.com/imbolc/tower-cookies
  * https://docs.rs/axum-extra/latest/axum_extra/extract/cookie/struct.SignedCookieJar.html
  * 
- * 
- * 
+ * https://docs.rs/tower-cookies/latest/tower_cookies/
+ * https://docs.rs/axum-extra/latest/axum_extra/extract/cookie/struct.SignedCookieJar.html
  * 
 
 ```rust

@@ -3,11 +3,11 @@ name = "axum_sandbox"
 version = "0.1.0"
 edition = "2021"
 
-[profile.dev]
-opt-level = 1
+#[profile.dev]
+#opt-level = 1
 
-[profile.dev.package."*"]
-opt-level = 3
+#[profile.dev.package."*"]
+#opt-level = 3
 
 [profile.release]
 strip = true #automatically strip symbols from binary
@@ -27,5 +27,6 @@ serde_json = "1" # Serde serializion/deserialization of JSON data.
 tower-http = { version = "0.3.4", features = ["cors","fs"] }
 #markup = "0.13.1" # template engine
 tracing = "0.1" #  Application-level tracing for Rust.
-tracing-subscriber = { version = "0.3.16", features = ["env-filter"] } # Utilities for implementing and composing `tracing` subscribers. 
+tracing-subscriber = { version = "0.3.16"}
+# features = ["env-filter"] } # Utilities for implementing and composing `tracing` subscribers. 
 
