@@ -5,6 +5,15 @@
  * https://docs.rs/tower-cookies/latest/tower_cookies/
  * https://docs.rs/axum-extra/latest/axum_extra/extract/cookie/struct.SignedCookieJar.html
  * 
+ * 
+ * https://www.shuttle.rs/blog/2022/08/11/authentication-tutorial
+ * https://github.com/imbolc/tower-cookies
+ * 
+ * 
+ * 
+
+
+
 
 ```rust
 use axum::{

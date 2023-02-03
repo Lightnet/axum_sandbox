@@ -5,7 +5,7 @@ import {
 } from "solid-js";
 import h from "solid-js/h";
 
-function Login(props){
+function SignIn(props){
 
   const [alias, setAlias] = createSignal("test");
   const [passphrase, setPassphrase] = createSignal("test");
@@ -20,8 +20,24 @@ function Login(props){
     setPassphrase(e.target.value);
   }
 
-  function btnSignIn(){
+  async function btnSignIn(){
     console.log("btnSignIn...")
+    try{
+      let resp = await fetch("/api/signin",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          alias:"testalias",
+          passphrase:"testpass",
+        })
+      });
+      let data = await resp.json();
+      console.log(data)
+    }catch(e){
+      console.log(e)
+    }
   }
   function btnSignUp(){
     console.log("btnSignUp...")
@@ -52,12 +68,20 @@ function Login(props){
     ),
     h("tr",{},
       h("td",{colspan:2},
-        h("button",{onClick:btnSignUp},"Sign Up"),
         h("button",{onClick:btnSignIn},"Sign In"),
-        h("button",{onClick:btnForgot},"Forgot"),
       ),
     ),
+    h("tr",{},
+      h("td",{colspan:2},
+        h("button",{onClick:btnSignUp},"Sign Up"),
+      )
+    ),
+    h("tr",{},
+      h("td",{colspan:2},
+        h("button",{onClick:btnForgot},"Forgot"),
+      )
+    )
   ))
 }
 
-export default Login;
+export default SignIn;

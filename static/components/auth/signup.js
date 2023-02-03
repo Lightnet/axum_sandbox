@@ -23,11 +23,24 @@ function SignUp(props){
     setPassphrase2(e.target.value);
   }
 
-  function btnRegister(){
+  async function btnRegister(){
     console.log("btnRegister...")
-    //if(typeof props.view == 'function'){
-      //props.view('signup')
-    //}
+    try{
+      let resp = await fetch("/api/signup",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          alias:"testalias",
+          passphrase:"testpass",
+        })
+      });
+      let data = await resp.json();
+      console.log(data)
+    }catch(e){
+      console.log(e)
+    }
   }
   function btnBack(){
     console.log("btnBack...")

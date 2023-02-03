@@ -14,10 +14,10 @@
 #![allow(unused_variables)]
 #![allow(unused_braces)]
 #![allow(unused_attributes)]
-
+// https://tokio.rs/blog/2022-11-25-announcing-axum-0-6-0
 use axum::{
   //body::{ boxed, Body, BoxBody},
-  extract::{State, Path},
+  extract::{State, Path, FromRef},
   routing::{get, post, get_service},
   Router,
   response::{Json, Html, IntoResponse},
@@ -25,19 +25,23 @@ use axum::{
 };
 
 use serde_json::{Value, json};
-use std::sync::Arc;
-use std::net::SocketAddr;
+//use std::sync::Arc;
+use std::{net::SocketAddr, time::Duration};
 
 use tower_http::cors::{Any, CorsLayer};
 //use tower::ServiceExt;
 use tower_http::services::ServeDir;
 //use tower_http::services::ServeFile;
 use std::{io};
+use dotenv::dotenv;
 use serde::{Serialize, Deserialize};
-
 use tracing_subscriber;
 use tracing::{info, debug};
 //use tracing_subscriber::filter::EnvFilter;
+use tower_cookies::{Cookie, CookieManagerLayer, Cookies};
+
+use sqlx::postgres::{PgPool, PgPoolOptions};
+use sqlx::{Pool,Postgres};
 
 mod authapi;
 use authapi::authroute;
@@ -45,8 +49,16 @@ use authapi::authroute;
 mod testfn;
 use testfn::testroute;
 
-struct AppState {
-  // ...
+mod database;
+use database::*;
+
+// https://github.com/tokio-rs/axum/blob/main/axum-extra/src/extract/cookie/mod.rs
+#[derive(Clone)]
+pub struct AppState {
+  //client: HttpClient,
+  //database: Database,
+  pool:Pool<Postgres>,
+  name:String,
 }
 
 async fn handle_error(_err: io::Error) -> impl IntoResponse {
@@ -55,33 +67,73 @@ async fn handle_error(_err: io::Error) -> impl IntoResponse {
 
 #[tokio::main]
 async fn main(){
+  dotenv().ok(); // This line loads the environment variables from the ".env" file.
   // for logging to console
   // tracing_subscriber::fmt().init();
   // initialize tracing
   tracing_subscriber::fmt()
     .with_max_level(tracing::Level::DEBUG)
+    .with_target(false)
+    //.json()
     .init();
   //testing logging
   //let number_of_yaks = 3;
   // this creates a new event, outside of any spans.
   //info!(number_of_yaks, "preparing to shave yaks");
 
+  //let dburl = std::env::var("DATABASE_URL").unwrap_or_else(|_|"None".to_string());
+  //debug!("DATABASE_URL: {}", dburl);
+  let db_connection_str = std::env::var("DATABASE_URL")
+    .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
+  debug!("DATABASE_URL: {}", db_connection_str);
+
+  // setup connection pool
+  let pool:Pool<Postgres> = PgPoolOptions::new()
+    .max_connections(5)
+    //.acquire_timeout(Duration::from_secs(3))
+    .connect(&db_connection_str)
+    //.connect("postgres://postgres:password@localhost/test")
+    .await
+    .expect("can't connect to database");
+
+  // Make a simple query to return the given parameter (use a question mark `?` instead of `$1` for MySQL)
+  //let row: (i64,) = sqlx::query_as("SELECT $1")
+    //.bind(150_i64)
+    //.fetch_one(&pool)
+    //.await
+    //.unwrap();
+
+  //assert_eq!(row.0, 150);
+
+
   let cors = CorsLayer::new().allow_origin(Any);
 
-  let shared_state = Arc::new(AppState { /* ... */ });
+  //let shared_state = Arc::new(AppState {
+  let shared_state = AppState {
+    //client: HttpClient {},
+    //database: Database {},
+    pool:pool,
+    name:"Test".into(),
+  };
 
   let serve_dir = get_service(ServeDir::new("static")).handle_error(handle_error);
 
   // build our application with a single route
   //let app = Router::new().route("/", get(|| async { "Hello, World!" }));
   let app = Router::new()
-    .with_state(shared_state)
+    
     .nest_service("/static", serve_dir.clone())
-    .route("/", get(index))
     //.route("/foo", get(|| async { "Hi from /foo" }))
-    .merge(authroute()) // place here to state app error.
-    .merge(testroute()) // place here to state app error.
+    .route("/", get(index))
+    .route("/testdb", get(testdb))
+    .route("/testdb01", get(testdb01))
+    .route("/cblog", get(create_blog))
+    .with_state(shared_state)
+    .merge(authroute()) // url > /api/name
+    .merge(testroute()) // test
     .fallback_service(serve_dir)
+    //.fallback(handler_404)
+    .layer(CookieManagerLayer::new())
     .layer(cors);
     
   let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
@@ -98,6 +150,7 @@ async fn main(){
     .unwrap();
 }
 
+//entry point index page
 async fn index() -> axum::response::Html<&'static str> {
   println!("index");
   include_str!("index.html").into()

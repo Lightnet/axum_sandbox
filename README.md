@@ -15,6 +15,15 @@
 # Information:
   web http server build tests.
 
+.env
+```
+#
+DATABASE_URL="postgres://user:password@127.0.0.1/test"
+```
 
- 
+# Database:
+  * sqlx
+  * Postgres
+
+# Refs:
  * https://docs.rs/axum/latest/axum/

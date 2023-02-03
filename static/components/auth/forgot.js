@@ -18,9 +18,26 @@ function Forgot(props){
     setEmail(e.target.value);
   }
 
-  function btnRecovery(){
+  async function btnRecovery(){
     console.log("btnRecovery...")
+    try{
+      let resp = await fetch("/api/forgot",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify({
+          alias:"testalias",
+          passphrase:"testpass",
+        })
+      });
+      let data = await resp.json();
+      console.log(data)
+    }catch(e){
+      console.log(e)
+    }
   }
+
   function btnBack(){
     console.log("btnBack...")
     if(typeof props.view == 'function'){

@@ -12,7 +12,7 @@ import {
 
 import h from "solid-js/h";
 
-import SignIn from "./auth/login.js";
+import SignIn from "./auth/signin.js";
 import SignUp from "./auth/signup.js";
 import Forgot from "./auth/forgot.js";
 
