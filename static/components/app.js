@@ -15,6 +15,7 @@ import h from "solid-js/h";
 import SignIn from "./auth/signin.js";
 import SignUp from "./auth/signup.js";
 import Forgot from "./auth/forgot.js";
+import ToDoList from "./todolist/todolist.js";
 
 const App = () => {
   console.log("init app2...")
@@ -38,6 +39,9 @@ const App = () => {
     }
     if(view() == "forgot"){
       return Forgot({view:viewRoute});
+    }
+    if(view() == "todolist"){
+      return ToDoList({view:viewRoute});
     }
   })
 

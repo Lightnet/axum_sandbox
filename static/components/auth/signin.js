@@ -52,6 +52,13 @@ function SignIn(props){
     }
   }
 
+  function btnToDoList(){
+    console.log("btnForgot...")
+    if(typeof props.view == 'function'){
+      props.view('todolist')
+    }
+  }
+
   return h("table",{}, h("tbody",{},
     h("tr",{},
       h("td",{colspan:2},
@@ -79,6 +86,7 @@ function SignIn(props){
     h("tr",{},
       h("td",{colspan:2},
         h("button",{onClick:btnForgot},"Forgot"),
+        h("button",{onClick:btnToDoList},"ToDoList"),
       )
     )
   ))
