@@ -18,7 +18,7 @@
 use axum::{
   //body::{ boxed, Body, BoxBody},
   extract::{State, Path, FromRef},
-  routing::{get, post, delete, get_service},
+  routing::{get, post, put, delete, get_service},
   Router,
   response::{Json, Html, IntoResponse},
   http::{StatusCode, header, Request, Response, Uri}
@@ -139,6 +139,7 @@ async fn main(){
     .route("/api/task", get(get_tasks))
     .route("/api/task", post(post_task))
     .route("/api/task", delete(delete_task))
+    .route("/api/task", put(put_task))
     .with_state(shared_state)
     .merge(authroute()) // url > /api/name
     .merge(adminroute()) // test

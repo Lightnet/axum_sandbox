@@ -72,8 +72,7 @@ pub async fn get_tasks(
     .await
     .map(|todos| axum::Json(todos))
     .map_err(internal_error)
-      
-
+    
     //"get tasks"
 }
 
@@ -92,11 +91,6 @@ pub async fn post_task(
   let pool = state.pool;
   //debug!("Put demo JSON data: {:?}", data);
   debug!("Put demo JSON data: {:?}", task);
-
-  //let task = Task{
-    //title:"test01".into(),
-    //text:"hello".into(),
-  //};
 
   //serde_json::to_string(&task).unwrap();
   //json!({"title":"test","text":"hello"}).into()
@@ -117,6 +111,47 @@ task.text
     Ok(r) => {
       info!( "result>>?: {:?}", r);
       return json!({"api":"created"}).into();
+    },
+    Err(..) => {
+      return json!({"api":"Something went wrong!"}).into();
+    },
+  }
+
+  //json!({"title":"test","text":"hello"}).into()
+}
+
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct UpdateTask{
+  id:i32,
+  text:String,
+}
+
+pub async fn put_task(
+  State(state): State<AppState>,
+  //axum::extract::Json(data): axum::extract::Json<serde_json::Value>,
+  axum::extract::Json(task): axum::extract::Json<UpdateTask>,
+)-> axum::extract::Json<Value>{
+
+  let pool = state.pool;
+  //debug!("Put demo JSON data: {:?}", data);
+  debug!("Put demo JSON data: {:?}", task);
+
+
+  let result = sqlx::query!(
+"UPDATE tasks SET text = $2 WHERE id = $1",
+task.id,
+task.text
+)    
+    //.fetch_one(&pool)
+    .execute(&pool)
+    .await;
+  //info!( "result: {:?}", result);
+
+  match result {
+    Ok(r) => {
+      info!( "result>>?: {:?}", r);
+      return json!({"api":"updated"}).into();
     },
     Err(..) => {
       return json!({"api":"Something went wrong!"}).into();
