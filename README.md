@@ -25,5 +25,16 @@ DATABASE_URL="postgres://user:password@127.0.0.1/test"
   * sqlx
   * Postgres
 
+# watch:
+
+```
+cargo install cargo-watch
+```
+
+```
+cargo watch -q -c -x 'run -q'
+```
+
+
 # Refs:
  * https://docs.rs/axum/latest/axum/

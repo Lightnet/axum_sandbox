@@ -18,7 +18,7 @@
 use axum::{
   //body::{ boxed, Body, BoxBody},
   extract::{State, Path, FromRef},
-  routing::{get, post, get_service},
+  routing::{get, post, delete, get_service},
   Router,
   response::{Json, Html, IntoResponse},
   http::{StatusCode, header, Request, Response, Uri}
@@ -51,6 +51,12 @@ use testfn::testroute;
 
 mod database;
 use database::*;
+
+mod adminapi;
+use adminapi::*;
+
+mod todolist;
+use todolist::*;
 
 // https://github.com/tokio-rs/axum/blob/main/axum-extra/src/extract/cookie/mod.rs
 #[derive(Clone)]
@@ -128,9 +134,17 @@ async fn main(){
     .route("/testdb", get(testdb))
     .route("/testdb01", get(testdb01))
     .route("/cblog", get(create_blog))
+    //.merge(todolistroute())
+    .route("/api/createttask", get(create_table_tasks))
+    .route("/api/task", get(get_tasks))
+    .route("/api/task", post(post_task))
+    .route("/api/task", delete(delete_task))
     .with_state(shared_state)
     .merge(authroute()) // url > /api/name
+    .merge(adminroute()) // test
+    
     .merge(testroute()) // test
+    
     .fallback_service(serve_dir)
     //.fallback(handler_404)
     .layer(CookieManagerLayer::new())
@@ -146,6 +160,7 @@ async fn main(){
   //axum::Server::bind(&"0.0.0.0:3000".parse().unwrap())
   axum::Server::bind(&addr)
     .serve(app.into_make_service())
+    .with_graceful_shutdown(shutdown_signal())
     .await
     .unwrap();
 }
@@ -154,4 +169,13 @@ async fn main(){
 async fn index() -> axum::response::Html<&'static str> {
   println!("index");
   include_str!("index.html").into()
+}
+
+/// Tokio signal handler that will wait for a user to press CTRL+C.
+/// We use this in our hyper `Server` method `with_graceful_shutdown`.
+async fn shutdown_signal() {
+  tokio::signal::ctrl_c()
+      .await
+      .expect("expect tokio signal ctrl-c");
+  println!("signal shutdown");
 }

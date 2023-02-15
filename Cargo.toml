@@ -25,12 +25,13 @@ serde_json = "1" # Serde serializion/deserialization of JSON data.
 #http = "0.2" # Types for HTTP requests and responses.
 #tower = "0.4.13"
 tower-http = { version = "0.3.4", features = ["cors","fs"] }
-tower-cookies = "0.8"
+tower-cookies = "0.9.0"
 #markup = "0.13.1" # template engine
 tracing = "0.1" #  Application-level tracing for Rust.
 tracing-subscriber = { version = "0.3.16", features = ["env-filter"]} # Utilities for implementing and composing `tracing` subscribers. 
 sqlx = { version = "0.6", features = [ "runtime-tokio-rustls", "postgres", "json" ] }
 jsonwebtoken = "8.2.0"
+#diesel = { version = "2.0.0", features = ["postgres"] }
 dotenv = "0.15.0"
 
 
