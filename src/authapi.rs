@@ -8,6 +8,8 @@ use axum::{
 use serde_json::{Value, json};
 use serde::{Serialize, Deserialize};
 use tracing::{info, debug};
+use crate::AppState;
+
 
 #[derive(Serialize)]
 pub struct UserLogin {
@@ -97,7 +99,7 @@ async fn echo() -> &'static str {
   "Hello, World!"
 }
 
-pub fn authroute() -> Router{
+pub fn authroute() -> Router<AppState>{
   Router::new()
     .route("/api/signin", post(signin_user))
     .route("/api/signup", post(create_user))

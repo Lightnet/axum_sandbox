@@ -1,0 +1,21 @@
+{
+  "name": "solidjsbuild",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "watchb": "vite build --watch",
+    "serve": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "solid-js": "^1.6.11",
+    "vite": "^4.1.4",
+    "vite-plugin-solid": "^2.5.0"
+  }
+}

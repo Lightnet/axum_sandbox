@@ -82,6 +82,7 @@ pub struct Task{
   text:String,
 }
 
+//POST CREATE TASK
 pub async fn post_task(
   State(state): State<AppState>,
   //axum::extract::Json(data): axum::extract::Json<serde_json::Value>,
@@ -94,23 +95,22 @@ pub async fn post_task(
 
   //serde_json::to_string(&task).unwrap();
   //json!({"title":"test","text":"hello"}).into()
-
-  let result = sqlx::query!(
-"INSERT INTO tasks(title, text)
-VALUES($1, $2)",
-task.title.to_string(),
-task.text
-)    
-    //.fetch_one(&pool)
-    .execute(&pool)
+  // sqlx::query!
+  let result = sqlx::query!("INSERT INTO tasks(title, text) VALUES($1, $2) RETURNING id",
+    task.title.to_string(),
+    task.text
+  ).fetch_one(&pool)
+  //execute(&pool)
     .await;
+    //.last_insert_id();
   //debug!( "result: {:?}", result);
-  //info!( "result: {:?}", result);
+  info!( "result: {:?}", result);
 
   match result {
     Ok(r) => {
       info!( "result>>?: {:?}", r);
-      return json!({"api":"created"}).into();
+      info!( "result>>?: {:?}", r.id);
+      return json!({"api":"created","id":r.id}).into();
     },
     Err(..) => {
       return json!({"api":"Something went wrong!"}).into();
@@ -126,7 +126,7 @@ pub struct UpdateTask{
   id:i32,
   text:String,
 }
-
+//UPDATE TASK
 pub async fn put_task(
   State(state): State<AppState>,
   //axum::extract::Json(data): axum::extract::Json<serde_json::Value>,
@@ -176,17 +176,19 @@ where
 pub struct DeleteTask{
   id:i32,
 }
-
+//DELETE TASK
 pub async fn delete_task(
   State(state): State<AppState>,
   //axum::extract::Json(data): axum::extract::Json<serde_json::Value>,
-  axum::extract::Json(task): axum::extract::Json<DeleteTask>,
+  //axum::extract::Json(task): axum::extract::Json<DeleteTask>,
+  Path(task_id):Path<i32>,
 )-> axum::extract::Json<Value>{
 
   let pool = state.pool;
   let result = sqlx::query!(
     "DELETE FROM tasks WHERE id = $1",
-    task.id,
+    task_id
+    //task.id,
     )    
         //.fetch_one(&pool)
         .execute(&pool)

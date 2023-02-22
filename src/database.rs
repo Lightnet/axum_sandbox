@@ -40,7 +40,6 @@ create table blog_entry
   text    text
 );
 
-
 insert into blog_entry( title, author, text)
 values ('Get enterprisey with Rust', 'Sander', 'Lorem Ipsum');
 insert into blog_entry( title, author, text)
@@ -50,8 +49,6 @@ values ('Get whimsical with data', 'Sander', 'Lorem Ipsum');
 /*
 SELECT * FROM blog_entry
 */
-
-
 
 pub async fn testdb(// set state
   State(state): State<AppState>,

@@ -33,6 +33,7 @@ use tower_http::cors::{Any, CorsLayer};
 use tower_http::services::ServeDir;
 //use tower_http::services::ServeFile;
 use std::{io};
+use std::env;
 use dotenv::dotenv;
 use serde::{Serialize, Deserialize};
 use tracing_subscriber;
@@ -49,14 +50,17 @@ use authapi::authroute;
 mod testfn;
 use testfn::testroute;
 
-mod database;
-use database::*;
+//mod database;
+//use database::*;
 
 mod adminapi;
 use adminapi::*;
 
-mod todolist;
-use todolist::*;
+mod sqlxtask;
+use sqlxtask::*;
+
+//mod dieseltask;
+//use dieseltask::*;
 
 // https://github.com/tokio-rs/axum/blob/main/axum-extra/src/extract/cookie/mod.rs
 #[derive(Clone)]
@@ -93,10 +97,10 @@ async fn main(){
     .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
   debug!("DATABASE_URL: {}", db_connection_str);
 
-  // setup connection pool
+  // setup connection pool SQLX
   let pool:Pool<Postgres> = PgPoolOptions::new()
     .max_connections(5)
-    //.acquire_timeout(Duration::from_secs(3))
+    .acquire_timeout(Duration::from_secs(3))
     .connect(&db_connection_str)
     //.connect("postgres://postgres:password@localhost/test")
     .await
@@ -122,29 +126,32 @@ async fn main(){
     name:"Test".into(),
   };
 
-  let serve_dir = get_service(ServeDir::new("static")).handle_error(handle_error);
+  //let serve_dir = get_service(ServeDir::new("static")).handle_error(handle_error);
+  let serve_dir = get_service(ServeDir::new("dist")).handle_error(handle_error);
 
   // build our application with a single route
   //let app = Router::new().route("/", get(|| async { "Hello, World!" }));
   let app = Router::new()
     
-    .nest_service("/static", serve_dir.clone())
+    //.nest_service("/static", serve_dir.clone())
+    .nest_service("/dist", serve_dir.clone())
     //.route("/foo", get(|| async { "Hi from /foo" }))
-    .route("/", get(index))
-    .route("/testdb", get(testdb))
-    .route("/testdb01", get(testdb01))
-    .route("/cblog", get(create_blog))
+    //.route("/", get(index))
+    //.route("/testdb", get(testdb))
+    //.route("/testdb01", get(testdb01))
+    //.route("/cblog", get(create_blog))
     //.merge(todolistroute())
     .route("/api/createttask", get(create_table_tasks))
     .route("/api/task", get(get_tasks))
     .route("/api/task", post(post_task))
-    .route("/api/task", delete(delete_task))
+    .route("/api/task/:task_id", delete(delete_task))
     .route("/api/task", put(put_task))
-    .with_state(shared_state)
+    
     .merge(authroute()) // url > /api/name
     .merge(adminroute()) // test
+    .with_state(shared_state)
     
-    .merge(testroute()) // test
+    //.merge(testroute()) // test
     
     .fallback_service(serve_dir)
     //.fallback(handler_404)
@@ -176,7 +183,7 @@ async fn index() -> axum::response::Html<&'static str> {
 /// We use this in our hyper `Server` method `with_graceful_shutdown`.
 async fn shutdown_signal() {
   tokio::signal::ctrl_c()
-      .await
-      .expect("expect tokio signal ctrl-c");
+    .await
+    .expect("expect tokio signal ctrl-c");
   println!("signal shutdown");
 }
