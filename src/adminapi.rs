@@ -21,7 +21,7 @@ pub struct AdminSigin {
 
 async fn adminpage() -> axum::response::Html<&'static str> {
   println!("access");
-  include_str!("access.html").into()
+  include_str!("html/access.html").into()
 }
 
 pub async fn signin_admin(

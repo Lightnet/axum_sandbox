@@ -1,5 +1,7 @@
-import { createMemo, createSignal, onMount } from "solid-js"
+//
 
+import { Link, useNavigate } from "@solidjs/router"
+import { createMemo, createSignal, onMount } from "solid-js"
 
 export default function PageTask(){
 
@@ -8,6 +10,8 @@ export default function PageTask(){
   const [tasks, setTasks] = createSignal([])
   const [editID, setEditID] = createSignal('')
   const [editContent, setEditContent] = createSignal('')
+
+  const navigate = useNavigate();
 
   async function getTask(){
     try{
@@ -141,6 +145,8 @@ export default function PageTask(){
 
   return <>
     <div>
+      <Link href="/"> Home </Link> <span> | </span>
+      <br/>
       <input value={content()} onInput={(e)=>setContent(e.target.value)} /><button onClick={onAddTask}>Add Task</button>
       <div>
         <ul>

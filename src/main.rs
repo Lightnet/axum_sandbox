@@ -47,8 +47,8 @@ use sqlx::{Pool,Postgres};
 mod authapi;
 use authapi::authroute;
 
-mod testfn;
-use testfn::testroute;
+//mod testfn;
+//use testfn::testroute;
 
 //mod database;
 //use database::*;
@@ -93,15 +93,15 @@ async fn main(){
 
   //let dburl = std::env::var("DATABASE_URL").unwrap_or_else(|_|"None".to_string());
   //debug!("DATABASE_URL: {}", dburl);
-  let db_connection_str = std::env::var("DATABASE_URL")
+  let database_url = std::env::var("DATABASE_URL")
     .unwrap_or_else(|_| "postgres://postgres:password@localhost".to_string());
-  debug!("DATABASE_URL: {}", db_connection_str);
+  debug!("DATABASE_URL: {}", database_url);
 
   // setup connection pool SQLX
   let pool:Pool<Postgres> = PgPoolOptions::new()
     .max_connections(5)
     .acquire_timeout(Duration::from_secs(3))
-    .connect(&db_connection_str)
+    .connect(&database_url)
     //.connect("postgres://postgres:password@localhost/test")
     .await
     .expect("can't connect to database");
@@ -124,6 +124,9 @@ async fn main(){
     //database: Database {},
     pool:pool,
     name:"Test".into(),
+    // that holds the key used to sign cookies
+    // https://docs.rs/axum-extra/latest/axum_extra/extract/cookie/struct.SignedCookieJar.html
+    //key: Key,
   };
 
   //let serve_dir = get_service(ServeDir::new("static")).handle_error(handle_error);
@@ -176,7 +179,7 @@ async fn main(){
 //entry point index page
 async fn index() -> axum::response::Html<&'static str> {
   println!("index");
-  include_str!("index.html").into()
+  include_str!("html/index.html").into()
 }
 
 /// Tokio signal handler that will wait for a user to press CTRL+C.

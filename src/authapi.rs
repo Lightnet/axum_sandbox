@@ -14,13 +14,13 @@ use crate::AppState;
 #[derive(Serialize)]
 pub struct UserLogin {
   alias: String,
-  passprhase: String,
+  passphrase: String,
 }
 
 #[derive(Deserialize,Debug)]
 pub struct UserSigin {
   alias: String,
-  passprhase: String,
+  passphrase: String,
 }
 
 pub async fn signin_user(
@@ -31,7 +31,7 @@ pub async fn signin_user(
 
   let user = UserLogin {
     alias: payload.alias,
-    passprhase: payload.passprhase,
+    passphrase: payload.passphrase,
   };
   //Json(json!({ "data": 42 }))
   (StatusCode::CREATED, Json(user))
@@ -41,6 +41,7 @@ pub async fn signin_user(
 pub struct CreateUser {
   alias: String,
   passphrase: String,
+  email:String,
 }
 
 #[derive(Serialize)]
