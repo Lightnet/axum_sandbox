@@ -12,6 +12,7 @@ import PageSignIn from "./auth/signin";
 import PageSignUp from "./auth/signup";
 import PageTask from "./task/task";
 import PageAccount from "./pages/Account";
+import PageLabTest from "./pages/LabTest";
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
       <Route path="/signin" component={PageSignIn} />
       <Route path="/signup" component={PageSignUp} />
       <Route path="/task" component={PageTask} />
+      <Route path="/labtest" component={PageLabTest} />
     </Routes>
   </AuthProvider>);
 

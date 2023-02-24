@@ -25,7 +25,7 @@ export default function PageSignUp(){
           email:email()
         })
       })
-  
+
       let data = await resp.json();
       console.log(data);  
     } catch (error) {

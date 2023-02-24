@@ -32,8 +32,9 @@ cargo install cargo-watch
 ```
 
 ```
-cargo watch -q -c -x 'run -q'
+cargo watch -q -c -x -i *.jsx -i *.js 'run -q'
 ```
+https://github.com/watchexec/cargo-watch
 
 
 # Refs:

@@ -10,6 +10,7 @@ use serde_json::{Value, json};
 use serde::{Serialize, Deserialize};
 use tracing::{info, debug};
 use crate::AppState;
+use tower_cookies::{Cookie, Cookies};
 
 pub async fn create_table_users(
   State(state): State<AppState>,
@@ -50,18 +51,106 @@ pub struct UserSigin {
   passphrase: String,
 }
 
+#[derive(Serialize)]
+pub struct UserStatus{
+  api:String,
+}
+
+#[derive(Debug, sqlx::FromRow)]
+pub struct TableUser {
+  id:i32,
+  alias:String,
+  email:String,
+  passphrase:String
+}
+
+const COOKIE_NAME: &str = "token";
+
+// https://docs.rs/sqlx/0.5.11/sqlx/macro.query_as.html
+// https://github.com/launchbadge/sqlx
 pub async fn signin_user(
+  State(state): State<AppState>,
+  cookies: Cookies,
   Json(payload): Json<UserSigin>,
 ) -> impl IntoResponse{
+  let pool = state.pool;
   debug!("{:?}", payload);
   //println!("alias {}", payload.alias);
 
-  let user = UserLogin {
-    alias: payload.alias,
-    passphrase: payload.passphrase,
+  /*
+  //let result = sqlx::query!("SELECT * FROM users WHERE alias = $1;", payload.alias)    
+  let result = sqlx::query_as::<_,TableUser>(
+    "SELECT * FROM users WHERE alias = ?")
+    .bind(payload.alias)   
+    //.fetch(&pool)
+    .fetch_one(&pool)
+    //.execute(&pool)
+    .await;
+  //debug!("{:?}", result);
+  */
+
+  let result = sqlx::query!("SELECT * FROM users WHERE alias = $1;", payload.alias)    
+    .fetch_one(&pool)
+    .await;
+  let mut user_status = UserStatus{
+    api:"reject".into()
   };
+  match result {
+    Ok(r)=>{//found user
+      debug!("userdata: {:?}", r);
+      //debug!("userdata: {:?}", r.id);
+      //debug!("userdata: {:?}", r.alias);
+      //return json!({"api":"created!"}).into();
+
+      //debug!("userdata: {:?}", r.alias.unwrap());
+      // https://www.ameyalokare.com/rust/2017/10/23/rust-options.html
+      //let name_string:&str= match r.alias {
+        //None => "None",
+        //Some(x)=> &x,
+      //};
+
+      let name_string =  r.alias.as_ref().unwrap();
+
+      if payload.alias.eq(name_string) {
+        println!("FOUND");
+      }else{
+        println!("NOT FOUND!");
+      }
+
+      let name_passphrase =  r.passphrase.as_ref().unwrap();
+      println!("db password:{}",name_passphrase);
+      println!("payload.passphrase:{}",payload.passphrase);
+
+      if payload.passphrase.eq(name_passphrase) {
+        println!("FOUND pass");
+        // https://docs.rs/tower-cookies/latest/tower_cookies/cookie/struct.CookieBuilder.html#method.new
+        let c = Cookie::build(COOKIE_NAME, "test")
+          .path("/")
+          .finish();
+
+        //cookies.add(Cookie::new(COOKIE_NAME, ("Test").to_string()));
+        cookies.add(c);
+
+      }else{
+        println!("reject pass!");
+      }
+
+      user_status.api = "passed".into();
+      return (StatusCode::CREATED, Json(user_status))
+    },
+    Err(e)=>{//not found
+      debug!("ERROR>>::{:?}", e);
+      
+      return (StatusCode::CREATED, Json(user_status))
+    },
+  }
+
+  //let user = UserLogin {
+    //alias: payload.alias,
+    //passphrase: payload.passphrase,
+  //};
   //Json(json!({ "data": 42 }))
-  (StatusCode::CREATED, Json(user))
+  //(StatusCode::CREATED, Json(user))
 }
 
 #[derive(Deserialize, Debug)]
@@ -175,6 +264,20 @@ async fn echo() -> &'static str {
   "Hello, World!"
 }
 
+async fn get_cookie(
+  State(state): State<AppState>,
+  cookies: Cookies,
+) -> &'static str{
+  let visited: _ = cookies
+      .get(COOKIE_NAME);
+      //.and_then(|c| c.value().parse().ok())
+      //.unwrap_or(0);
+  println!("COOKIE: {:?}",visited);
+
+
+  "cookie!"
+}
+
 pub fn authroute() -> Router<AppState>{
   Router::new()
     .route("/api/signin", post(signin_user))
@@ -182,4 +285,5 @@ pub fn authroute() -> Router<AppState>{
     .route("/api/forgot", post(forgot_user))
     //.route("/api/echo", get(echo))
     .route("/api/ctusers", get(create_table_users))
+    .route("/api/getcookie", get(get_cookie))
 }

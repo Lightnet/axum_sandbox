@@ -28,7 +28,6 @@ export default function PageSignIn(){
     } catch (error) {
       console.log("Error:",error.message)
     }
-    
   }
 
   function btnCancel(){

@@ -10,6 +10,7 @@ export default function PageHome(){
       <Link href="/signin"> Sign In</Link> <span> | </span>
       <Link href="/signup"> Sign Up</Link> <span> | </span>
       <Link href="/task"> Task </Link> <span> | </span>
+      <Link href="/labtest"> Lab Test </Link> <span> | </span>
     </div>
     </div>);
 }
