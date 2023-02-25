@@ -20,13 +20,18 @@ pub async fn create_table_users(
   //include_str!("access.html").into()
   let pool = state.pool;
 
-  sqlx::query("drop table if exists users;")
-    .execute(&pool).await.expect("error running script");
+  //sqlx::query("drop table if exists users;")
+    //.execute(&pool)
+    //.await
+    //.expect("error running script");
+  
+  // https://www.postgresqltutorial.com/postgresql-tutorial/postgresql-uuid/
   
   sqlx::query("
   CREATE TABLE users
   (
-    id SERIAL PRIMARY KEY,
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    aliasID uuid DEFAULT gen_random_uuid(),
     alias  varchar(100),
     email  varchar(40),
     passphrase varchar(100)
@@ -68,6 +73,7 @@ const COOKIE_NAME: &str = "token";
 
 // https://docs.rs/sqlx/0.5.11/sqlx/macro.query_as.html
 // https://github.com/launchbadge/sqlx
+
 pub async fn signin_user(
   State(state): State<AppState>,
   cookies: Cookies,
@@ -76,18 +82,6 @@ pub async fn signin_user(
   let pool = state.pool;
   debug!("{:?}", payload);
   //println!("alias {}", payload.alias);
-
-  /*
-  //let result = sqlx::query!("SELECT * FROM users WHERE alias = $1;", payload.alias)    
-  let result = sqlx::query_as::<_,TableUser>(
-    "SELECT * FROM users WHERE alias = ?")
-    .bind(payload.alias)   
-    //.fetch(&pool)
-    .fetch_one(&pool)
-    //.execute(&pool)
-    .await;
-  //debug!("{:?}", result);
-  */
 
   let result = sqlx::query!("SELECT * FROM users WHERE alias = $1;", payload.alias)    
     .fetch_one(&pool)
@@ -123,8 +117,16 @@ pub async fn signin_user(
 
       if payload.passphrase.eq(name_passphrase) {
         println!("FOUND pass");
+        let user_data = json!({
+          "id":"0000",
+          "alias":"Guest"
+        }).to_string();
+        let cookie_str  = user_data; //need to convert hash
+
+
         // https://docs.rs/tower-cookies/latest/tower_cookies/cookie/struct.CookieBuilder.html#method.new
-        let c = Cookie::build(COOKIE_NAME, "test")
+        //let c = Cookie::build(COOKIE_NAME, "test")
+        let c = Cookie::build(COOKIE_NAME, cookie_str)
           .path("/")
           .finish();
 
@@ -133,6 +135,8 @@ pub async fn signin_user(
 
       }else{
         println!("reject pass!");
+        user_status.api = "rejected".into();
+        return (StatusCode::CREATED, Json(user_status))
       }
 
       user_status.api = "passed".into();
@@ -152,6 +156,8 @@ pub async fn signin_user(
   //Json(json!({ "data": 42 }))
   //(StatusCode::CREATED, Json(user))
 }
+
+
 
 #[derive(Deserialize, Debug)]
 pub struct CreateUser {
@@ -173,6 +179,7 @@ pub struct RegisterStatus{
 
 // https://docs.rs/tracing-stackdriver/latest/tracing_stackdriver/
 // https://docs.rs/axum/0.2.6/axum/index.html
+
 pub async fn create_user(
   State(state): State<AppState>,
   Json(payload): Json<CreateUser>,
@@ -282,8 +289,8 @@ pub fn authroute() -> Router<AppState>{
   Router::new()
     .route("/api/signin", post(signin_user))
     .route("/api/signup", post(create_user))
-    .route("/api/forgot", post(forgot_user))
+    //.route("/api/forgot", post(forgot_user))
     //.route("/api/echo", get(echo))
-    .route("/api/ctusers", get(create_table_users))
+    .route("/api/createtableusers", get(create_table_users))
     .route("/api/getcookie", get(get_cookie))
 }
